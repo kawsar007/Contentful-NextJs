@@ -1,7 +1,7 @@
 import { documentToReactComponents } from "@contentful/rich-text-react-renderer";
 import Image from "next/image";
 
-const url = `${process.env.BASE_URL}/spaces/${process.env.SPACE_ID}/environments/master/entries?access_token=${process.env.ACCESS_TOKEN}`;
+const url = `${process.env.BASE_URL}/spaces/${process.env.SPACE_ID}/environments/master/entries?access_token=${process.env.ACCESS_TOKEN}&content_type=blog`;
 
 const options = {
   renderText: (text) => {
@@ -36,10 +36,20 @@ export default async function Home() {
         const imageUrl = image?.fields?.file?.url;
         const fullImageUrl = imageUrl ? `https:${imageUrl}` : null;
 
+        // Get the author name
+        const authorEntry = data?.includes?.Entry?.find(
+          (entry) => entry.sys.id === item?.fields?.author.sys.id
+        );
+
+        // Get the author image
+        const authorImage = data.includes.Asset.find(
+          (auth) => auth.sys.id === authorEntry.fields?.authorImage?.sys?.id
+        );
+
         return (
-          <div key={i}>
-            <h1 className="text-3xl font-bold px-24">{item?.fields?.title}</h1>
-            <div className="py-4 px-24">
+          <div key={i} className="px-24 mx-auto">
+            <h1 className="text-3xl font-bold py-4">{item?.fields?.title}</h1>
+            <div className="py-4 px-4">
               {documentToReactComponents(item?.fields?.body)}
             </div>
             {fullImageUrl && (
@@ -50,6 +60,19 @@ export default async function Home() {
                 alt={item?.fields?.title || "blog image"}
               />
             )}
+
+            <div className="flex justify-start items-center gap-2 mt-10">
+              <Image
+                src={"https:" + authorImage?.fields.file.url}
+                width={500}
+                height={500}
+                alt="Author"
+                className="h-16 w-16 rounded-full object-cover"
+              />
+              <h4>
+                <b>Author:</b> {authorEntry?.fields?.authorName}
+              </h4>
+            </div>
           </div>
         );
       })}
